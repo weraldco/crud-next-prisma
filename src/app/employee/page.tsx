@@ -1,8 +1,11 @@
 // import Employee from '@/components/tabledata';
+import Search from '@/components/search';
+import { Spinner } from '@/components/spinner';
 import TableData from '@/components/tabledata';
 import Link from 'next/link';
-import React from 'react';
-const Home = () => {
+import React, { Suspense } from 'react';
+const Home = async ({ searchParams }: { searchParms?: { query?: string } }) => {
+	const query = searchParams?.query || '';
 	return (
 		<div className="w-screen py-20 flex justify-center flex-col items-center">
 			<div className="flex items-center justify-between gap-1 mb-5">
@@ -14,7 +17,10 @@ const Home = () => {
 						Create
 					</Link>
 				</div>
-				<TableData />
+				<Search />
+				<Suspense key={query} fallback={<Spinner />}>
+					<TableData query={query} />
+				</Suspense>
 			</div>
 		</div>
 	);

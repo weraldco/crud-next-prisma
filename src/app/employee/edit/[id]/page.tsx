@@ -6,7 +6,6 @@ import React from 'react';
 const EditEmployeeIdPage = async ({ params }: { params: { id: string } }) => {
 	const id = params.id;
 	const employee = await getEmployeeById(id);
-
 	if (!employee) return notFound();
 
 	return (

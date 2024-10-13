@@ -1,9 +1,10 @@
-import { getEmployeeList } from '@/lib/action';
+import { getData } from '@/lib/action';
 import Link from 'next/link';
 import React from 'react';
+import { DeleteBtn } from './deleteBtn';
 
 const Employee = async ({ query }: { query: string }) => {
-	const employees = await getEmployeeList(query);
+	const employees = await getData(query);
 	return (
 		<table className="table table-zebra">
 			<thead className="text-sm text-gray-700 uppercase bg-gray-50">
@@ -30,20 +31,14 @@ const Employee = async ({ query }: { query: string }) => {
 								year: 'numeric',
 							})}
 						</td>
-						<td>
+						<td className="flex justify-center items-center gap-2">
 							<Link
 								className="btn btn-primary"
 								href={`/employee/edit/${rs.id}`}
 							>
 								Edit
 							</Link>{' '}
-							|{' '}
-							<Link
-								className="btn btn-error"
-								href={`/employee/delete/${rs.id}`}
-							>
-								Delete
-							</Link>
+							| <DeleteBtn id={rs.id} />
 						</td>
 					</tr>
 				))}

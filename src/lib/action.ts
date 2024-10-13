@@ -3,9 +3,9 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
-import { create } from 'domain';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { emit } from 'process';
 import { z } from 'zod';
 
 const EmployeeSchema = z.object({
@@ -29,7 +29,7 @@ export const saveEmployee = async (prevSate: any, formData: FormData) => {
 			data: {
 				name: validatedFields.data.name,
 				email: validatedFields.data.email,
-				phone: validatedFields.data.email,
+				phone: validatedFields.data.phone,
 			},
 		});
 
@@ -61,6 +61,24 @@ export const getEmployeeList = async (query: string) => {
 	}
 };
 
+export const getData = async (query: string) => {
+	try {
+		const employees = await prisma.employee.findMany({
+			where: {
+				name: {
+					contains: query,
+				},
+			},
+			orderBy: {
+				createdAt: 'desc',
+			},
+		});
+		return employees;
+	} catch (error) {
+		throw new Error('Failed to fetch employees data');
+	}
+};
+
 export const getEmployeeById = async (id: string) => {
 	try {
 		const employee = await prisma.employee.findUnique({
@@ -70,4 +88,48 @@ export const getEmployeeById = async (id: string) => {
 	} catch (error) {
 		throw new Error('Cannot fetch employee data');
 	}
+};
+
+export const updateEmployee = async (
+	id: string,
+	prevSate: any,
+	formData: FormData
+) => {
+	const validatedFields = EmployeeSchema.safeParse(
+		Object.fromEntries(formData.entries())
+	);
+
+	if (!validatedFields.success) {
+		return {
+			Error: validatedFields.error.flatten().fieldErrors,
+		};
+	}
+	try {
+		await prisma.employee.update({
+			where: {
+				id,
+			},
+			data: {
+				name: validatedFields.data.name,
+				email: validatedFields.data.email,
+				phone: validatedFields.data.phone,
+			},
+		});
+		console.log('Successfully updated employee.');
+	} catch (error) {
+		return { message: 'Failed to update employee' };
+	}
+	revalidatePath('/employee');
+	redirect('/employee');
+};
+
+export const deleteEmployee = async (id: string) => {
+	try {
+		await prisma.employee.delete({
+			where: { id },
+		});
+	} catch (error) {
+		return { message: 'Cannot delete employee' };
+	}
+	revalidatePath('/employee');
 };
